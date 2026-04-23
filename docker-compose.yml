@@ -5,10 +5,11 @@ services:
       - "5432:5432"
     restart: always
     environment:
-      POSTGRES_PASSWORD: changemeinprod!
+      POSTGRES_DB: tasks_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
 
 volumes:
   pgdata:
-
