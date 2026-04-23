@@ -4,15 +4,17 @@ import com.jefersondev.tasks.domain.entities.TaskList;
 import com.jefersondev.tasks.domain.entities.dto.TaskListDto;
 import com.jefersondev.tasks.mappers.TaskListMapper;
 import com.jefersondev.tasks.services.TaskListService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/task-lists")
 public class TaskListController {
+
     private final TaskListService taskListService;
     private final TaskListMapper taskListMapper;
 
@@ -22,40 +24,45 @@ public class TaskListController {
     }
 
     @GetMapping
-    public List<TaskListDto> listTasksLists() {
-        return taskListService.listTaskList()
+    public ResponseEntity<List<TaskListDto>> listTaskLists() {
+        List<TaskListDto> taskLists = taskListService.listTaskLists()
                 .stream()
                 .map(taskListMapper::toDto)
                 .toList();
+        return ResponseEntity.ok(taskLists);
     }
 
     @PostMapping
-    public TaskListDto creatTaskList(@RequestBody TaskListDto taskListDto) {
-        TaskList createdTaksList = taskListService.creatTaskList(
+    public ResponseEntity<TaskListDto> createTaskList(@RequestBody TaskListDto taskListDto) {
+        TaskList created = taskListService.createTaskList(
                 taskListMapper.fromDto(taskListDto)
         );
-        return taskListMapper.toDto(createdTaksList);
+        return ResponseEntity.status(HttpStatus.CREATED).body(taskListMapper.toDto(created));
     }
 
-    @GetMapping(path = "/{task_list_id}")
-    public Optional<TaskListDto> getTaskList(@PathVariable("task_list_id") UUID taskListId) {
-        return taskListService.getTaksList(taskListId).map(taskListMapper::toDto);
+    @GetMapping("/{task_list_id}")
+    public ResponseEntity<TaskListDto> getTaskList(@PathVariable("task_list_id") UUID taskListId) {
+        return taskListService.getTaskList(taskListId)
+                .map(taskListMapper::toDto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping(path = "/{task_list_id}")
-    public TaskListDto updateTaskList(
+    @PutMapping("/{task_list_id}")
+    public ResponseEntity<TaskListDto> updateTaskList(
             @PathVariable("task_list_id") UUID taskListId,
             @RequestBody TaskListDto taskListDto
     ) {
-        TaskList updatedtaskList = taskListService.updateTaskList(
+        TaskList updated = taskListService.updateTaskList(
                 taskListId,
                 taskListMapper.fromDto(taskListDto)
         );
-        return taskListMapper.toDto(updatedtaskList);
+        return ResponseEntity.ok(taskListMapper.toDto(updated));
     }
 
-    @DeleteMapping(path = "/{task_list_id}")
-    public void deleteTaskList(@PathVariable("task_list_id") UUID taskListId){
+    @DeleteMapping("/{task_list_id}")
+    public ResponseEntity<Void> deleteTaskList(@PathVariable("task_list_id") UUID taskListId) {
         taskListService.deleteTaskList(taskListId);
+        return ResponseEntity.noContent().build();
     }
 }

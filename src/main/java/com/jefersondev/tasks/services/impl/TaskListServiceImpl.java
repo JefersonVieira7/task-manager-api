@@ -22,21 +22,23 @@ public class TaskListServiceImpl implements TaskListService {
     }
 
     @Override
-    public List<TaskList> listTaskList() {
-        return taskListRepository.findAll();
+    public List<TaskList> listTaskLists() {
+        return taskListRepository.findAllWithTasks();
     }
 
+    @Transactional
     @Override
-    public TaskList creatTaskList(TaskList taskList) {
+    public TaskList createTaskList(TaskList taskList) {
         if (null != taskList.getId()) {
-            throw new IllegalArgumentException("Taks list already has an ID!");
+            throw new IllegalArgumentException("Task list already has an ID!");
         }
         if (null == taskList.getTitle() || taskList.getTitle().isBlank()) {
             throw new IllegalArgumentException("Task list title must be present!");
         }
 
         LocalDateTime now = LocalDateTime.now();
-        return taskListRepository.save(new TaskList(null,
+        return taskListRepository.save(new TaskList(
+                null,
                 taskList.getTitle(),
                 taskList.getDescription(),
                 null,
@@ -46,30 +48,32 @@ public class TaskListServiceImpl implements TaskListService {
     }
 
     @Override
-    public Optional<TaskList> getTaksList(UUID id) {
-        return taskListRepository.findById(id);
+    public Optional<TaskList> getTaskList(UUID id) {
+        return taskListRepository.findByIdWithTasks(id);
     }
 
+    @Transactional
     @Override
     public TaskList updateTaskList(UUID taskListId, TaskList taskList) {
-        if (taskList.getId() == null){
+        if (taskList.getId() == null) {
             throw new IllegalArgumentException("Task list must have an ID");
         }
-        if (!Objects.equals(taskList.getId(), taskListId)){
+        if (!Objects.equals(taskList.getId(), taskListId)) {
             throw new IllegalArgumentException("Attempting to change task list ID, this is not permitted!");
         }
 
-        TaskList existingTaksList = taskListRepository.findById(taskListId).orElseThrow(() ->
-                new IllegalArgumentException("Task list not found!"));
+        TaskList existingTaskList = taskListRepository.findById(taskListId)
+                .orElseThrow(() -> new IllegalArgumentException("Task list not found!"));
 
-        existingTaksList.setTitle(taskList.getTitle());
-        existingTaksList.setDescription(taskList.getDescription());
-        existingTaksList.setUpdated(LocalDateTime.now());
-        return taskListRepository.save(existingTaksList);
+        existingTaskList.setTitle(taskList.getTitle());
+        existingTaskList.setDescription(taskList.getDescription());
+        existingTaskList.setUpdated(LocalDateTime.now());
+        return taskListRepository.save(existingTaskList);
     }
 
+    @Transactional
     @Override
-    public void deleteTaskList(UUID taskLisId) {
-        taskListRepository.deleteById(taskLisId);
+    public void deleteTaskList(UUID taskListId) {
+        taskListRepository.deleteById(taskListId);
     }
 }

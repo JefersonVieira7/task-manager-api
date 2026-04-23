@@ -7,10 +7,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface TaskListService {
-    List<TaskList>  listTaskList();
-    TaskList creatTaskList(TaskList taskList);
-    Optional<TaskList> getTaksList(UUID id);
+    List<TaskList> listTaskLists();
+    TaskList createTaskList(TaskList taskList);
+    Optional<TaskList> getTaskList(UUID id);
     TaskList updateTaskList(UUID taskListId, TaskList taskList);
-    void deleteTaskList(UUID taskLisId);
-
+    void deleteTaskList(UUID taskListId);
 }
