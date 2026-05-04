@@ -1,5 +1,4 @@
 package com.jefersondev.tasks.services.impl;
-
 import com.jefersondev.tasks.domain.entities.TaskList;
 import com.jefersondev.tasks.repositories.TaskListRepository;
 import com.jefersondev.tasks.services.TaskListService;
@@ -36,14 +35,13 @@ public class TaskListServiceImpl implements TaskListService {
             throw new IllegalArgumentException("Task list title must be present!");
         }
 
-        LocalDateTime now = LocalDateTime.now();
         return taskListRepository.save(new TaskList(
                 null,
                 taskList.getTitle(),
                 taskList.getDescription(),
                 null,
-                now,
-                now
+                null,
+                null
         ));
     }
 
@@ -62,13 +60,12 @@ public class TaskListServiceImpl implements TaskListService {
             throw new IllegalArgumentException("Attempting to change task list ID, this is not permitted!");
         }
 
-        TaskList existingTaskList = taskListRepository.findById(taskListId)
+        TaskList existing = taskListRepository.findById(taskListId)
                 .orElseThrow(() -> new IllegalArgumentException("Task list not found!"));
 
-        existingTaskList.setTitle(taskList.getTitle());
-        existingTaskList.setDescription(taskList.getDescription());
-        existingTaskList.setUpdated(LocalDateTime.now());
-        return taskListRepository.save(existingTaskList);
+        existing.setTitle(taskList.getTitle());
+        existing.setDescription(taskList.getDescription());
+        return taskListRepository.save(existing);
     }
 
     @Transactional
