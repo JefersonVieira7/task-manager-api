@@ -4,6 +4,7 @@ import com.jefersondev.tasks.domain.entities.TaskList;
 import com.jefersondev.tasks.domain.entities.dto.TaskListDto;
 import com.jefersondev.tasks.mappers.TaskListMapper;
 import com.jefersondev.tasks.services.TaskListService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +34,7 @@ public class TaskListController {
     }
 
     @PostMapping
-    public ResponseEntity<TaskListDto> createTaskList(@RequestBody TaskListDto taskListDto) {
+    public ResponseEntity<TaskListDto> createTaskList(@Valid @RequestBody TaskListDto taskListDto) {
         TaskList created = taskListService.createTaskList(
                 taskListMapper.fromDto(taskListDto)
         );
@@ -51,7 +52,7 @@ public class TaskListController {
     @PutMapping("/{task_list_id}")
     public ResponseEntity<TaskListDto> updateTaskList(
             @PathVariable("task_list_id") UUID taskListId,
-            @RequestBody TaskListDto taskListDto
+            @Valid @RequestBody TaskListDto taskListDto
     ) {
         TaskList updated = taskListService.updateTaskList(
                 taskListId,

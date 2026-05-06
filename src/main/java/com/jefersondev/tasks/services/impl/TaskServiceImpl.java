@@ -39,9 +39,6 @@ public class TaskServiceImpl implements TaskService {
         if (task.getId() != null) {
             throw new BusinessException("Task must not have an ID when creating");
         }
-        if (task.getTitle() == null || task.getTitle().isBlank()) {
-            throw new BusinessException("Task must have a title");
-        }
 
         TaskList taskList = taskListRepository.findById(taskListId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task list", taskListId));

@@ -33,9 +33,6 @@ public class TaskListServiceImpl implements TaskListService {
         if (taskList.getId() != null) {
             throw new BusinessException("Task list must not have an ID when creating");
         }
-        if (taskList.getTitle() == null || taskList.getTitle().isBlank()) {
-            throw new BusinessException("Task list title must be present");
-        }
         return taskListRepository.save(new TaskList(
                 null,
                 taskList.getTitle(),

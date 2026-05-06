@@ -30,8 +30,11 @@ public class TaskMapperImpl implements TaskMapper {
                 task.getTitle(),
                 task.getDescription(),
                 task.getDueDate(),
+                task.getStatus(),
                 task.getPriority(),
-                task.getStatus()
+                task.getTaskList() != null ? task.getTaskList().getId() : null,
+                task.getCreatedAt(),
+                task.getUpdatedAt()
         );
     }
 }
