@@ -1,11 +1,13 @@
 package com.jefersondev.tasks.services.impl;
+
 import com.jefersondev.tasks.domain.entities.TaskList;
+import com.jefersondev.tasks.exceptions.BusinessException;
+import com.jefersondev.tasks.exceptions.ResourceNotFoundException;
 import com.jefersondev.tasks.repositories.TaskListRepository;
 import com.jefersondev.tasks.services.TaskListService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -28,13 +30,12 @@ public class TaskListServiceImpl implements TaskListService {
     @Transactional
     @Override
     public TaskList createTaskList(TaskList taskList) {
-        if (null != taskList.getId()) {
-            throw new IllegalArgumentException("Task list already has an ID!");
+        if (taskList.getId() != null) {
+            throw new BusinessException("Task list must not have an ID when creating");
         }
-        if (null == taskList.getTitle() || taskList.getTitle().isBlank()) {
-            throw new IllegalArgumentException("Task list title must be present!");
+        if (taskList.getTitle() == null || taskList.getTitle().isBlank()) {
+            throw new BusinessException("Task list title must be present");
         }
-
         return taskListRepository.save(new TaskList(
                 null,
                 taskList.getTitle(),
@@ -54,14 +55,14 @@ public class TaskListServiceImpl implements TaskListService {
     @Override
     public TaskList updateTaskList(UUID taskListId, TaskList taskList) {
         if (taskList.getId() == null) {
-            throw new IllegalArgumentException("Task list must have an ID");
+            throw new BusinessException("Task list must have an ID to be updated");
         }
         if (!Objects.equals(taskList.getId(), taskListId)) {
-            throw new IllegalArgumentException("Attempting to change task list ID, this is not permitted!");
+            throw new BusinessException("Task list ID in the body does not match the URL");
         }
 
         TaskList existing = taskListRepository.findById(taskListId)
-                .orElseThrow(() -> new IllegalArgumentException("Task list not found!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task list", taskListId));
 
         existing.setTitle(taskList.getTitle());
         existing.setDescription(taskList.getDescription());
@@ -71,6 +72,9 @@ public class TaskListServiceImpl implements TaskListService {
     @Transactional
     @Override
     public void deleteTaskList(UUID taskListId) {
+        if (!taskListRepository.existsById(taskListId)) {
+            throw new ResourceNotFoundException("Task list", taskListId);
+        }
         taskListRepository.deleteById(taskListId);
     }
 }
