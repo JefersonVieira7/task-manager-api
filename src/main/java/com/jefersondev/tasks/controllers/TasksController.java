@@ -4,6 +4,7 @@ import com.jefersondev.tasks.domain.entities.Task;
 import com.jefersondev.tasks.domain.entities.dto.TaskDto;
 import com.jefersondev.tasks.mappers.TaskMapper;
 import com.jefersondev.tasks.services.TaskService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "Tasks", description = "Endpoints para gerenciamento de tarefas dentro de uma task list")
 @RestController
 @RequestMapping(path = "/api/task-lists/{task_list_id}/tasks")
 public class TasksController {
