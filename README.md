@@ -1,6 +1,15 @@
 # Task Manager API
 
-REST API para gerenciamento de listas de tarefas (Task Lists) e tarefas (Tasks), desenvolvida com Java 21 e Spring Boot 4.
+![Java](https://img.shields.io/badge/Java-21-orange?logo=openjdk)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0-brightgreen?logo=springboot)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql)
+![Flyway](https://img.shields.io/badge/Flyway-migrations-red?logo=flyway)
+![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker)
+![License](https://img.shields.io/badge/License-MIT-yellow)
+![Status](https://img.shields.io/badge/Status-Em%20desenvolvimento-brightgreen)
+
+REST API para gerenciamento de listas de tarefas (Task Lists) e tarefas (Tasks),
+desenvolvida com Java 21 e Spring Boot 4.
 
 ## Tecnologias
 
