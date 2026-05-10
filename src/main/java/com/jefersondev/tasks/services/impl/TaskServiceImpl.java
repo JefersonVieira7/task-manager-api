@@ -1,6 +1,4 @@
-// src/main/java/com/jefersondev/tasks/services/impl/TaskServiceImpl.java
 package com.jefersondev.tasks.services.impl;
-
 import com.jefersondev.tasks.domain.entities.Task;
 import com.jefersondev.tasks.domain.entities.TaskList;
 import com.jefersondev.tasks.domain.entities.TaskPriority;
@@ -10,10 +8,11 @@ import com.jefersondev.tasks.exceptions.ResourceNotFoundException;
 import com.jefersondev.tasks.repositories.TaskListRepository;
 import com.jefersondev.tasks.repositories.TaskRepository;
 import com.jefersondev.tasks.services.TaskService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,14 +22,21 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
     private final TaskListRepository taskListRepository;
 
-    public TaskServiceImpl(TaskRepository taskRepository, TaskListRepository taskListRepository) {
+    public TaskServiceImpl(TaskRepository taskRepository,
+                           TaskListRepository taskListRepository) {
         this.taskRepository = taskRepository;
         this.taskListRepository = taskListRepository;
     }
 
     @Override
-    public List<Task> listTasks(UUID taskListId) {
-        return taskRepository.findByTaskListId(taskListId);
+    public Page<Task> listTasks(UUID taskListId, TaskStatus status,
+                                String title, Pageable pageable) {
+        return taskRepository.findByTaskListIdWithFilters(
+                taskListId,
+                status,
+                title,
+                pageable
+        );
     }
 
     @Transactional
