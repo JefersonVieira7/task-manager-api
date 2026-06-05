@@ -1,5 +1,4 @@
 package com.jefersondev.tasks.controllers;
-
 import com.jefersondev.tasks.domain.entities.TaskList;
 import com.jefersondev.tasks.domain.entities.dto.TaskListDto;
 import com.jefersondev.tasks.mappers.TaskListMapper;
@@ -11,7 +10,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.UUID;
 

@@ -1,5 +1,5 @@
 package com.jefersondev.tasks.domain.entities;
 
 public enum TaskStatus {
-    OPEN, CLOSED
+    OPEN, CLOSED, COMPLETED
 }
