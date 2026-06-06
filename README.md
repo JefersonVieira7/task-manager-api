@@ -7,6 +7,7 @@
 ![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 ![Status](https://img.shields.io/badge/Status-Em%20desenvolvimento-brightgreen)
+![CI](https://github.com/JefersonVieira7/task-manager-api/actions/workflows/ci.yml/badge.svg)
 
 REST API para gerenciamento de listas de tarefas (Task Lists) e tarefas (Tasks),
 desenvolvida com Java 21 e Spring Boot 4.
