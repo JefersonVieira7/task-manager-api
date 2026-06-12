@@ -8,6 +8,7 @@
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 ![Status](https://img.shields.io/badge/Status-Em%20desenvolvimento-brightgreen)
 ![CI](https://github.com/JefersonVieira7/task-manager-api/actions/workflows/ci.yml/badge.svg)
+![Deploy](https://img.shields.io/badge/Deploy-Railway-blueviolet?style=flat&logo=railway)
 
 REST API para gerenciamento de listas de tarefas (Task Lists) e tarefas (Tasks),
 desenvolvida com Java 21 e Spring Boot 4.
@@ -68,11 +69,12 @@ export DB_PASSWORD=sua_senha
 
 A API estará disponível em `http://localhost:8080`
 
+
 ## Documentação
 
-Após subir a aplicação, acesse a documentação interativa:
+**Swagger UI (live):** https://task-manager-api-production-3374.up.railway.app/swagger-ui.html
 
-**Swagger UI:** `http://localhost:8080/swagger-ui.html`
+**API Base URL:** https://task-manager-api-production-3374.up.railway.app
 
 ## Endpoints
 

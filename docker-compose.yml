@@ -4,7 +4,7 @@ services:
     container_name: tasks-db
     ports:
       - "5432:5432"
-    restart: always
+    restart: "no"
     environment:
       POSTGRES_DB: tasks_dev
       POSTGRES_USER: postgres
@@ -30,7 +30,7 @@ services:
       DB_URL: jdbc:postgresql://db:5432/tasks_dev
       DB_USERNAME: postgres
       DB_PASSWORD: ${DB_PASSWORD}
-    restart: on-failure
+    restart: "no"
 
 volumes:
   pgdata:

@@ -28,3 +28,6 @@ jobs:
 
       - name: Build application
         run: ./mvnw package -DskipTests -B
+
+      - name: Build Docker image
+        run: docker build -t tasks-app .
