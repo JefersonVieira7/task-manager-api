@@ -4,9 +4,13 @@ import com.jefersondev.tasks.domain.entities.Task;
 import com.jefersondev.tasks.domain.entities.TaskList;
 import com.jefersondev.tasks.domain.entities.TaskPriority;
 import com.jefersondev.tasks.domain.entities.TaskStatus;
+import com.jefersondev.tasks.domain.entities.dto.AuthResponse;
+import com.jefersondev.tasks.domain.entities.dto.RegisterRequest;
 import com.jefersondev.tasks.domain.entities.dto.TaskDto;
 import com.jefersondev.tasks.repositories.TaskListRepository;
 import com.jefersondev.tasks.repositories.TaskRepository;
+import com.jefersondev.tasks.repositories.UserRepository;
+import com.jefersondev.tasks.services.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,15 +45,40 @@ class TasksControllerIT {
     @Autowired
     private TaskRepository taskRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private AuthService authService;
+
     private TaskList taskList;
+    private String token;
 
     @BeforeEach
     void setUp() {
         taskRepository.deleteAll();
         taskListRepository.deleteAll();
+        userRepository.deleteAll();
+
         taskList = taskListRepository.save(buildTaskList("My List"));
+
+        var register = new RegisterRequest("Test User", "test@test.com", "password123");
+        AuthResponse auth = authService.register(register);
+        token = auth.token();
     }
 
+    private <T> HttpEntity<T> authEntity(T body) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(token);
+        return new HttpEntity<>(body, headers);
+    }
+
+    private HttpEntity<Void> authEntity() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        return new HttpEntity<>(headers);
+    }
 
     @Test
     @DisplayName("GET /tasks — should return 200 with empty page")
@@ -57,7 +86,7 @@ class TasksControllerIT {
         ResponseEntity<Map<String, Object>> response = testRestTemplate.exchange(
                 "/api/task-lists/" + taskList.getId() + "/tasks",
                 HttpMethod.GET,
-                null,
+                authEntity(),
                 new ParameterizedTypeReference<>() {}
         );
 
@@ -75,7 +104,7 @@ class TasksControllerIT {
         ResponseEntity<Map<String, Object>> response = testRestTemplate.exchange(
                 "/api/task-lists/" + taskList.getId() + "/tasks",
                 HttpMethod.GET,
-                null,
+                authEntity(),
                 new ParameterizedTypeReference<>() {}
         );
 
@@ -97,7 +126,7 @@ class TasksControllerIT {
         ResponseEntity<Map<String, Object>> response = testRestTemplate.exchange(
                 "/api/task-lists/" + taskList.getId() + "/tasks?status=OPEN",
                 HttpMethod.GET,
-                null,
+                authEntity(),
                 new ParameterizedTypeReference<>() {}
         );
 
@@ -114,14 +143,13 @@ class TasksControllerIT {
         ResponseEntity<Map<String, Object>> response = testRestTemplate.exchange(
                 "/api/task-lists/" + taskList.getId() + "/tasks?title=buy",
                 HttpMethod.GET,
-                null,
+                authEntity(),
                 new ParameterizedTypeReference<>() {}
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody().get("totalElements")).isEqualTo(1);
     }
-
 
     @Test
     @DisplayName("POST /tasks — should return 201 when valid")
@@ -135,7 +163,7 @@ class TasksControllerIT {
         ResponseEntity<TaskDto> response = testRestTemplate.exchange(
                 "/api/task-lists/" + taskList.getId() + "/tasks",
                 HttpMethod.POST,
-                new HttpEntity<>(request),
+                authEntity(request),
                 TaskDto.class
         );
 
@@ -160,11 +188,12 @@ class TasksControllerIT {
         ResponseEntity<TaskDto> response = testRestTemplate.exchange(
                 "/api/task-lists/" + taskList.getId() + "/tasks",
                 HttpMethod.POST,
-                new HttpEntity<>(request),
+                authEntity(request),
                 TaskDto.class
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().priority()).isEqualTo(TaskPriority.MEDIUM);
     }
 
@@ -180,7 +209,7 @@ class TasksControllerIT {
         ResponseEntity<Object> response = testRestTemplate.exchange(
                 "/api/task-lists/" + taskList.getId() + "/tasks",
                 HttpMethod.POST,
-                new HttpEntity<>(request),
+                authEntity(request),
                 Object.class
         );
 
@@ -190,15 +219,12 @@ class TasksControllerIT {
     @Test
     @DisplayName("POST /tasks — should return 400 when title is null")
     void createTask_shouldReturn400WhenTitleNull() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
         String body = "{\"description\": \"no title\"}";
 
         ResponseEntity<Object> response = testRestTemplate.exchange(
                 "/api/task-lists/" + taskList.getId() + "/tasks",
                 HttpMethod.POST,
-                new HttpEntity<>(body, headers),
+                authEntity(body),
                 Object.class
         );
 
@@ -217,7 +243,7 @@ class TasksControllerIT {
         ResponseEntity<Object> response = testRestTemplate.exchange(
                 "/api/task-lists/" + taskList.getId() + "/tasks",
                 HttpMethod.POST,
-                new HttpEntity<>(request),
+                authEntity(request),
                 Object.class
         );
 
@@ -236,7 +262,7 @@ class TasksControllerIT {
         ResponseEntity<Object> response = testRestTemplate.exchange(
                 "/api/task-lists/" + UUID.randomUUID() + "/tasks",
                 HttpMethod.POST,
-                new HttpEntity<>(request),
+                authEntity(request),
                 Object.class
         );
 
@@ -251,7 +277,7 @@ class TasksControllerIT {
         ResponseEntity<TaskDto> response = testRestTemplate.exchange(
                 "/api/task-lists/" + taskList.getId() + "/tasks/" + saved.getId(),
                 HttpMethod.GET,
-                null,
+                authEntity(),
                 TaskDto.class
         );
 
@@ -267,7 +293,7 @@ class TasksControllerIT {
         ResponseEntity<Object> response = testRestTemplate.exchange(
                 "/api/task-lists/" + taskList.getId() + "/tasks/" + UUID.randomUUID(),
                 HttpMethod.GET,
-                null,
+                authEntity(),
                 Object.class
         );
 
@@ -283,13 +309,12 @@ class TasksControllerIT {
         ResponseEntity<Object> response = testRestTemplate.exchange(
                 "/api/task-lists/" + taskList.getId() + "/tasks/" + task.getId(),
                 HttpMethod.GET,
-                null,
+                authEntity(),
                 Object.class
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
-
 
     @Test
     @DisplayName("PUT /tasks/{id} — should return 200 when valid")
@@ -305,7 +330,7 @@ class TasksControllerIT {
         ResponseEntity<TaskDto> response = testRestTemplate.exchange(
                 "/api/task-lists/" + taskList.getId() + "/tasks/" + saved.getId(),
                 HttpMethod.PUT,
-                new HttpEntity<>(update),
+                authEntity(update),
                 TaskDto.class
         );
 
@@ -330,7 +355,7 @@ class TasksControllerIT {
         ResponseEntity<Object> response = testRestTemplate.exchange(
                 "/api/task-lists/" + taskList.getId() + "/tasks/" + saved.getId(),
                 HttpMethod.PUT,
-                new HttpEntity<>(update),
+                authEntity(update),
                 Object.class
         );
 
@@ -351,7 +376,7 @@ class TasksControllerIT {
         ResponseEntity<Object> response = testRestTemplate.exchange(
                 "/api/task-lists/" + taskList.getId() + "/tasks/" + saved.getId(),
                 HttpMethod.PUT,
-                new HttpEntity<>(update),
+                authEntity(update),
                 Object.class
         );
 
@@ -372,13 +397,12 @@ class TasksControllerIT {
         ResponseEntity<Object> response = testRestTemplate.exchange(
                 "/api/task-lists/" + taskList.getId() + "/tasks/" + randomId,
                 HttpMethod.PUT,
-                new HttpEntity<>(update),
+                authEntity(update),
                 Object.class
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
-
 
     @Test
     @DisplayName("DELETE /tasks/{id} — should return 204 when found")
@@ -388,7 +412,7 @@ class TasksControllerIT {
         ResponseEntity<Void> response = testRestTemplate.exchange(
                 "/api/task-lists/" + taskList.getId() + "/tasks/" + saved.getId(),
                 HttpMethod.DELETE,
-                null,
+                authEntity(),
                 Void.class
         );
 
@@ -402,7 +426,7 @@ class TasksControllerIT {
         ResponseEntity<Object> response = testRestTemplate.exchange(
                 "/api/task-lists/" + taskList.getId() + "/tasks/" + UUID.randomUUID(),
                 HttpMethod.DELETE,
-                null,
+                authEntity(),
                 Object.class
         );
 
@@ -418,13 +442,12 @@ class TasksControllerIT {
         ResponseEntity<Object> response = testRestTemplate.exchange(
                 "/api/task-lists/" + taskList.getId() + "/tasks/" + task.getId(),
                 HttpMethod.DELETE,
-                null,
+                authEntity(),
                 Object.class
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
-
 
     private TaskList buildTaskList(String title) {
         TaskList tl = new TaskList();

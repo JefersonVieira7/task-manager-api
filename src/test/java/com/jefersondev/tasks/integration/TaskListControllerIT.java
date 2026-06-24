@@ -2,21 +2,26 @@ package com.jefersondev.tasks.integration;
 
 import com.jefersondev.tasks.domain.entities.TaskList;
 import com.jefersondev.tasks.domain.entities.dto.TaskListDto;
+import com.jefersondev.tasks.domain.entities.dto.AuthResponse;
+import com.jefersondev.tasks.domain.entities.dto.RegisterRequest;
 import com.jefersondev.tasks.repositories.TaskListRepository;
+import com.jefersondev.tasks.repositories.UserRepository;
+import com.jefersondev.tasks.services.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -33,9 +38,35 @@ class TaskListControllerIT {
     @Autowired
     private TaskListRepository taskListRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private AuthService authService;
+
+    private String token;
+
     @BeforeEach
     void setUp() {
         taskListRepository.deleteAll();
+        userRepository.deleteAll();
+
+        var register = new RegisterRequest("Test User", "test@test.com", "password123");
+        AuthResponse auth = authService.register(register);
+        token = auth.token();
+    }
+
+    private <T> HttpEntity<T> authEntity(T body) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(token);
+        return new HttpEntity<>(body, headers);
+    }
+
+    private HttpEntity<Void> authEntity() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        return new HttpEntity<>(headers);
     }
 
     @Test
@@ -44,7 +75,7 @@ class TaskListControllerIT {
         ResponseEntity<List<TaskListDto>> response = testRestTemplate.exchange(
                 "/api/task-lists",
                 HttpMethod.GET,
-                null,
+                authEntity(),
                 new ParameterizedTypeReference<>() {}
         );
 
@@ -61,7 +92,7 @@ class TaskListControllerIT {
         ResponseEntity<List<TaskListDto>> response = testRestTemplate.exchange(
                 "/api/task-lists",
                 HttpMethod.GET,
-                null,
+                authEntity(),
                 new ParameterizedTypeReference<>() {}
         );
 
@@ -72,7 +103,6 @@ class TaskListControllerIT {
                 .containsExactlyInAnyOrder("Work", "Personal");
     }
 
-
     @Test
     @DisplayName("POST /api/task-lists — should return 201 when valid")
     void createTaskList_shouldReturn201WhenValid() {
@@ -81,7 +111,7 @@ class TaskListControllerIT {
         ResponseEntity<TaskListDto> response = testRestTemplate.exchange(
                 "/api/task-lists",
                 HttpMethod.POST,
-                new HttpEntity<>(request),
+                authEntity(request),
                 TaskListDto.class
         );
 
@@ -99,7 +129,7 @@ class TaskListControllerIT {
         ResponseEntity<Object> response = testRestTemplate.exchange(
                 "/api/task-lists",
                 HttpMethod.POST,
-                new HttpEntity<>(request),
+                authEntity(request),
                 Object.class
         );
 
@@ -109,15 +139,12 @@ class TaskListControllerIT {
     @Test
     @DisplayName("POST /api/task-lists — should return 400 when title is null")
     void createTaskList_shouldReturn400WhenTitleNull() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
         String body = "{\"description\": \"no title\"}";
 
         ResponseEntity<Object> response = testRestTemplate.exchange(
                 "/api/task-lists",
                 HttpMethod.POST,
-                new HttpEntity<>(body, headers),   // ← headers aqui
+                authEntity(body),
                 Object.class
         );
 
@@ -132,7 +159,7 @@ class TaskListControllerIT {
         ResponseEntity<TaskListDto> response = testRestTemplate.exchange(
                 "/api/task-lists/" + saved.getId(),
                 HttpMethod.GET,
-                null,
+                authEntity(),
                 TaskListDto.class
         );
 
@@ -148,7 +175,7 @@ class TaskListControllerIT {
         ResponseEntity<Object> response = testRestTemplate.exchange(
                 "/api/task-lists/" + UUID.randomUUID(),
                 HttpMethod.GET,
-                null,
+                authEntity(),
                 Object.class
         );
 
@@ -165,7 +192,7 @@ class TaskListControllerIT {
         ResponseEntity<TaskListDto> response = testRestTemplate.exchange(
                 "/api/task-lists/" + saved.getId(),
                 HttpMethod.PUT,
-                new HttpEntity<>(update),
+                authEntity(update),
                 TaskListDto.class
         );
 
@@ -182,7 +209,7 @@ class TaskListControllerIT {
         ResponseEntity<Void> response = testRestTemplate.exchange(
                 "/api/task-lists/" + saved.getId(),
                 HttpMethod.DELETE,
-                null,
+                authEntity(),
                 Void.class
         );
 
@@ -196,13 +223,12 @@ class TaskListControllerIT {
         ResponseEntity<Object> response = testRestTemplate.exchange(
                 "/api/task-lists/" + UUID.randomUUID(),
                 HttpMethod.DELETE,
-                null,
+                authEntity(),
                 Object.class
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
-
 
     private TaskList buildTaskList(String title) {
         TaskList tl = new TaskList();
