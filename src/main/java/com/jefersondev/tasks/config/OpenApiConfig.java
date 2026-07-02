@@ -8,6 +8,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.Components;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import io.swagger.v3.oas.models.servers.Server;
 
 @Configuration
 public class OpenApiConfig {
@@ -17,6 +18,12 @@ public class OpenApiConfig {
         final String securitySchemeName = "bearerAuth";
 
         return new OpenAPI()
+                .addServersItem(new Server()
+                        .url("https://task-manager-api-production-3374.up.railway.app")
+                        .description("Servidor de Produção"))
+                .addServersItem(new Server()
+                        .url("http://localhost:8080")
+                        .description("Servidor Local"))
                 .info(new Info()
                         .title("Task Manager API")
                         .description("""
